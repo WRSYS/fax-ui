@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>fax-ui • Faxes</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial; margin: 2rem; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #ddd; padding: 8px; }
+      th { background: #f6f6f6; text-align: left; }
+      nav a { margin-right: 12px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+      .muted { color: #666; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Faxes</h1>
+      <nav>
+        <a href="/">Send</a>
+        <a href="/faxes">List</a>
+        <a href="/settings">Settings</a>
+        <a href="/logout" style="float: right;">Logout</a>
+      </nav>
+    </header>
+
+    <p class="muted">Page {{ .PageNumber }} • Size {{ .PageSize }}</p>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Status</th>
+          <th>Direction</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Faxes }}
+        <tr>
+          <td class="mono"><a href="/fax?id={{ .ID }}">{{ .ID }}</a></td>
+          <td>{{ .Status }}</td>
+          <td>{{ .Direction }}</td>
+          <td>{{ .From }}</td>
+          <td>{{ .To }}</td>
+          <td>{{ .CreatedAt }}</td>
+        </tr>
+        {{ else }}
+        <tr>
+          <td colspan="6" class="muted">No results</td>
+        </tr>
+        {{ end }}
+      </tbody>
+    </table>
+  </body>
+  </html>

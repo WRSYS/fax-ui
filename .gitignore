@@ -1,0 +1,9 @@
+# Binary
+/fax-ui
+
+# Local scripts
+/local-test.sh
+
+# Go
+/bin/
+/dist/
