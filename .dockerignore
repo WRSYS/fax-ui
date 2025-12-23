@@ -1,0 +1,16 @@
+# VCS
+.git
+.gitignore
+
+# Mac / editor junk
+.DS_Store
+.idea
+.vscode
+
+# Builds
+bin/
+dist/
+out/
+
+# Local uploads (mount as volume instead)
+uploads/
