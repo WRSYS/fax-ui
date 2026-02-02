@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fax UI</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button, .oauth-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background: #0066cc;
+            color: white;
+        }
+        button[type="submit"]:hover {
+            background: #0052a3;
+        }
+        .oauth-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .oauth-section h3 {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .oauth-google {
+            background: #4285f4;
+            color: white;
+        }
+        .oauth-google:hover {
+            background: #357ae8;
+        }
+        .oauth-microsoft {
+            background: #00a4ef;
+            color: white;
+        }
+        .oauth-microsoft:hover {
+            background: #008ad0;
+        }
+        .oauth-github {
+            background: #24292e;
+            color: white;
+        }
+        .oauth-github:hover {
+            background: #1a1e22;
+        }
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #999;
+            position: relative;
+        }
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #ddd;
+        }
+        .divider::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🖷 Fax UI Login</h1>
+        
+        {{if eq .Error "invalid"}}
+        <div class="error">Invalid password. Please try again.</div>
+        {{end}}
+        
+        {{if .HasPassword}}
+        <form method="POST" action="/login">
+            <input type="hidden" name="redirect" value="{{.Redirect}}">
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autofocus>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        {{end}}
+        
+        {{if or .HasGoogle .HasMicrosoft .HasGitHub}}
+            {{if .HasPassword}}
+            <div class="divider">or</div>
+            {{end}}
+            
+            <div class="oauth-section">
+                {{if not .HasPassword}}
+                <h3>Sign in with</h3>
+                {{end}}
+                
+                {{if .HasGoogle}}
+                <a href="/auth/login/google?redirect={{.Redirect}}" class="oauth-button oauth-google">
+                    Continue with Google
+                </a>
+                {{end}}
+                
+                {{if .HasMicrosoft}}
+                <a href="/auth/login/microsoft?redirect={{.Redirect}}" class="oauth-button oauth-microsoft">
+                    Continue with Microsoft
+                </a>
+                {{end}}
+                
+                {{if .HasGitHub}}
+                <a href="/auth/login/github?redirect={{.Redirect}}" class="oauth-button oauth-github">
+                    Continue with GitHub
+                </a>
+                {{end}}
+            </div>
+        {{end}}
+    </div>
+</body>
+</html>

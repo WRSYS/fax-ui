@@ -1,0 +1,24 @@
+version: "3.9"
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - TELNYX_API_KEY=${TELNYX_API_KEY}
+      - FAX_CONNECTION_ID=${FAX_CONNECTION_ID}
+      - FAX_FROM_DEFAULT=${FAX_FROM_DEFAULT}
+      - HIPPA_MODE=${HIPPA_MODE:-false}
+      - PUBLIC_BASE_URL=${PUBLIC_BASE_URL}
+      - NGROK_API_URL=http://ngrok:4040
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      - ngrok
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: http --log=stdout app:8080
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      - "4040:4040"

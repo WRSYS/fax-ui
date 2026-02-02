@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>fax-ui • Fax</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial; margin: 2rem; }
+      dt { font-weight: 600; }
+      dd { margin: 0 0 8px 0; }
+      nav a { margin-right: 12px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Fax Details</h1>
+      <nav>
+        <a href="/">Send</a>
+        <a href="/faxes">List</a>        <a href="/settings">Settings</a>        <a href="/logout" style="float: right;">Logout</a>      </nav>
+    </header>
+
+    <section>
+      <dl>
+        <dt>ID</dt>
+        <dd class="mono">{{ .Fax.ID }}</dd>
+        <dt>Status</dt>
+        <dd>{{ .Fax.Status }}</dd>
+        <dt>Direction</dt>
+        <dd>{{ .Fax.Direction }}</dd>
+        <dt>From</dt>
+        <dd>{{ .Fax.From }}</dd>
+        <dt>To</dt>
+        <dd>{{ .Fax.To }}</dd>
+        <dt>Created</dt>
+        <dd>{{ .Fax.CreatedAt }}</dd>
+        <dt>Updated</dt>
+        <dd>{{ .Fax.UpdatedAt }}</dd>
+        <dt>Preview URL</dt>
+        <dd>{{ if .Fax.PreviewURL }}<a href="{{ .Fax.PreviewURL }}" target="_blank" rel="noopener">open</a>{{ else }}—{{ end }}</dd>
+        <dt>Stored Media URL</dt>
+        <dd>{{ if .Fax.StoredMediaURL }}<a href="{{ .Fax.StoredMediaURL }}" target="_blank" rel="noopener">open</a>{{ else }}—{{ end }}</dd>
+      </dl>
+    </section>
+  </body>
+  </html>

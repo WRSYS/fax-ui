@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>fax-ui • Send Fax</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 2rem; }
+      header { margin-bottom: 1rem; }
+      form { max-width: 640px; display: grid; gap: 12px; }
+      label { display: grid; gap: 6px; }
+      input[type="text"], input[type="url"], select { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .hint { color: #666; font-size: 0.9rem; }
+      .warn { background: #fff3cd; border: 1px solid #ffe69c; padding: 10px; border-radius: 6px; }
+      button { padding: 10px 14px; border: 0; background: #1f7a8c; color: white; border-radius: 6px; cursor: pointer; }
+      nav a { margin-right: 12px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Telnyx Fax UI</h1>
+      <nav>
+        <a href="/">Send</a>
+        <a href="/faxes">List</a>
+        {{ if .PrefillConnectionID }}<a href="/settings">Settings</a>{{ end }}
+        <a href="/logout" style="float: right;">Logout</a>
+      </nav>
+      {{ if not .HasAPIKey }}
+        <p class="warn">Environment variable TELNYX_API_KEY is not set. Requests will fail until it is configured.</p>
+      {{ end }}
+    </header>
+
+    <h2>Send a Fax</h2>
+    <form action="/fax" method="post" enctype="multipart/form-data">
+      <div class="row">
+        {{ if not .HideFrom }}
+        <label>
+          From (E.164)
+          <input type="text" name="from" value="{{ .PrefillFrom }}" placeholder="+15551234567" required />
+        </label>
+        {{ end }}
+        <label>
+          To (E.164 or SIP URI)
+          <input type="text" name="to" placeholder="+15557654321" required />
+        </label>
+      </div>
+      {{ if not .HideConnectionID }}
+      <label>
+        Connection ID
+        <input type="text" name="connection_id" value="{{ .PrefillConnectionID }}" placeholder="conn_xxxxx" required />
+      </label>
+      {{ end }}
+      <label>
+        Media URL (PDF/TIFF)
+        <input type="url" name="media_url" placeholder="https://example.com/file.pdf" />
+        <span class="hint">Provide a reachable URL to your PDF/TIFF. Alternatively, upload a file below.</span>
+      </label>
+      <label>
+        Upload File (PDF/TIFF)
+        <input type="file" name="media_file" accept="application/pdf,image/tiff" />
+        <span class="hint">Uploaded files are temporarily stored and automatically deleted after 30 minutes (HIPAA compliant).</span>
+      </label>
+      <label>
+        Webhook URL (optional)
+        <input type="url" name="webhook_url" placeholder="https://yourapp.tld/webhooks/telnyx" />
+      </label>
+      <div class="row">
+        <label>
+          Quality
+          <select name="quality">
+            <option value="">Default</option>
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+            <option value="very_high">Very High</option>
+            <option value="ultra_light">Ultra Light</option>
+            <option value="ultra_dark">Ultra Dark</option>
+          </select>
+        </label>
+      </div>
+      <div class="row">
+        <label>
+          <input type="checkbox" name="store_preview" {{ if .Hipaa }}disabled{{ end }} /> Store Preview
+        </label>
+        <label>
+          <input type="checkbox" name="store_media" {{ if .Hipaa }}disabled{{ end }} /> Store Media
+        </label>
+      </div>
+      <div>
+        <button type="submit">Send Fax</button>
+      </div>
+    </form>
+  </body>
+  </html>

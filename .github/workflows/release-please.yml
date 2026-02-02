@@ -1,0 +1,109 @@
+name: Release & Publish Binaries
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Release Please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          # Use a GitHub App installation token so downstream workflows run
+          token: ${{ steps.app-token.outputs.token }}
+          # Minimal footprint: use language-specific release type without manifest/config
+          release-type: go
+
+      - name: Check out repository
+        uses: actions/checkout@v6
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          go-version: "1.25"
+
+      - name: Build binaries
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          VERSION: ${{ steps.release.outputs.tag_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+
+          # Build for multiple platforms
+          platforms=(
+            "linux/amd64"
+            "linux/arm64"
+            "darwin/amd64"
+            "darwin/arm64"
+            "windows/amd64"
+          )
+
+          for platform in "${platforms[@]}"; do
+            GOOS="${platform%/*}"
+            GOARCH="${platform#*/}"
+            output="dist/fax-ui-${GOOS}-${GOARCH}"
+            if [ "$GOOS" = "windows" ]; then
+              output="${output}.exe"
+            fi
+            echo "Building for ${GOOS}/${GOARCH}..."
+            GOOS=$GOOS GOARCH=$GOARCH go build -ldflags="-s -w -X main.Version=${VERSION}" -o "$output" ./app
+          done
+
+          # Create checksums
+          cd dist
+          sha256sum * > checksums.txt
+
+      - name: Upload release binaries
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release upload ${{ steps.release.outputs.tag_name }} dist/* --clobber
+
+      - name: Tag major and minor versions
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          MAJOR: ${{ steps.release.outputs.major }}
+          MINOR: ${{ steps.release.outputs.minor }}
+          RELEASE_SHA: ${{ steps.release.outputs.sha }}
+          GH_APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          git config user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config user.email '${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+          git fetch --tags --force
+          # Authenticate pushes with GitHub App token
+          git remote set-url origin "https://x-access-token:${GH_APP_TOKEN}@github.com/${{ github.repository }}.git"
+          # Delete existing remote tags if present (ignore failures)
+          git push origin :refs/tags/v${MAJOR} || true
+          git push origin :refs/tags/v${MAJOR}.${MINOR} || true
+          # Delete local tags if they already exist to avoid creation errors
+          if git rev-parse "v${MAJOR}" >/dev/null 2>&1; then
+            git tag -d v${MAJOR} || true
+          fi
+          if git rev-parse "v${MAJOR}.${MINOR}" >/dev/null 2>&1; then
+            git tag -d v${MAJOR}.${MINOR} || true
+          fi
+          # Recreate annotated tags pointing to the release commit (force in case of stale refs)
+          git tag -fa v${MAJOR} ${RELEASE_SHA} -m "Release v${MAJOR}"
+          git tag -fa v${MAJOR}.${MINOR} ${RELEASE_SHA} -m "Release v${MAJOR}.${MINOR}"
+          # Push tags forcing update to remote
+          git push --force origin v${MAJOR}
+          git push --force origin v${MAJOR}.${MINOR}
